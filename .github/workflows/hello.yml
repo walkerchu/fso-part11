@@ -1,0 +1,22 @@
+# Full Stack open: Continuous integration (part 11)
+# by The University of Helsinki
+# url : https://courses.mooc.fi/org/uh-cs/courses/full-stack-open-continuous-integration
+# created: Sept 22, 2026
+
+# Exercise 11.3: 
+# Create a new Workflow that outputs "Hello World!" to the console
+
+name: Hello World!
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  hello_world_job:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Say hello
+        run: |
+          echo "Hello World!"
