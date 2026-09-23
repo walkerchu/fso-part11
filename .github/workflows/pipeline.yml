@@ -5,6 +5,7 @@
 
 # Change Logs :
 # 1. Exercise 11.5: implement a "Lint" workflow
+# 2. Exercise 11.7: add build and test commands
 
 name: Deployment pipeline
 
@@ -28,3 +29,9 @@ jobs:
 
             - name: Check style
               run: npm run eslint
+
+            - name: Run npm test
+              run: npm run test
+
+            - name: Run npm build
+              run: npm run build
