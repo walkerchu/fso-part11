@@ -6,6 +6,8 @@ const isCI = !!process.env.CI
 export default defineConfig({
   testDir: './e2e-tests',
   timeout: 30000,
+  // Ensure HTML reporter is generated in CI
+  reporter: isCI ? [['list'], ['html', { open: 'never' }]] : 'list',
   use: {
     // Uses local Chrome on your machine, but default Chromium in GitHub Actions
     channel: isCI ? undefined : 'chrome',
