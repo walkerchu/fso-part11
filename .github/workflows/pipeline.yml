@@ -6,32 +6,47 @@
 # Change Logs :
 # 1. Exercise 11.5: implement a "Lint" workflow
 # 2. Exercise 11.7: add build and test commands
+# 3. Exercise 11.9: add simple end-to-end tests
 
 name: Deployment pipeline
 
 on:
-    push:
-        branches:
-            - main
+  push:
+    branches:
+      - main
 
 jobs:
-    simple_deployment_pipeline:
-        runs-on: ubuntu-latest
-        steps:
-            - uses: actions/checkout@v6
+  simple_deployment_pipeline:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
 
-            - uses: actions/setup-node@v6
-              with:
-                  node-version: "24"
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "24"
 
-            - name: Install dependencies
-              run: npm install
+      - name: Install dependencies
+        run: npm install
 
-            - name: Check style
-              run: npm run eslint
+      - name: Check style
+        run: npm run eslint
 
-            - name: Run npm test
-              run: npm run test
+      - name: Run npm test
+        run: npm run test
 
-            - name: Run npm build
-              run: npm run build
+      - name: Run npm build
+        run: npm run build
+
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps
+
+      - name: Run Playwright tests
+        run: npx playwright test
+
+      - name: Upload Playwright Report
+        uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 30
