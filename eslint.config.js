@@ -36,7 +36,7 @@ module.exports = [
     }
   },
   {
-    files: ['src/**/*.{js,jsx}', 'test/**/*.{js,jsx}'],
+    files: ['src/**/*.{js,jsx}', 'test/**/*.{js,jsx}', 'e2e-tests/**/*.{js,jsx}'],
     plugins: {
       react,
       jest

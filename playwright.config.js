@@ -18,6 +18,6 @@ export default defineConfig({
     command: isCI ? 'npm run start-prod' : 'npm run start:no-open',
     url: process.env.CI ? 'http://localhost:5001': 'http://localhost:8080',
     timeout: 120 * 1000,
-    reuseExistingServer: isCI,
+    reuseExistingServer: !isCI,
   },
 })
