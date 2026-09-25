@@ -11,4 +11,17 @@ const start = async () => {
   console.log(`server started on port ${PORT}`)
 }
 
+// exercise 11.12 : add 'version' endpoint
+app.get('/version', (req, res) => {
+  res.send('11.12.1') // change this string for each new version deployed
+})
+
+// exercise 11.12 : add 'health check' endpoint
+app.get('/health', (req, res) => {
+  // eslint-disable-next-line no-constant-condition
+  if (true) throw('error...  ')
+  res.send('ok')
+})
+
+
 start()
