@@ -4,10 +4,20 @@ This repository is used for the CI/CD module (part 11) of the Full Stack Open co
 
 ## Version History
 
-1. v1.0 at Sept 22, 2026
+1. v1.0 (Sept 22, 2026)
 
-    - clone exercise 2 repo from https://github.com/fullstack-hy2020/fs-pokedex
-    - add command execution result
+  - clone exercise 2 repo from https://github.com/fullstack-hy2020/fs-pokedex
+  - add command execution result
+
+2. v1.1 (Sept 26, 2026)
+
+  - add Render URL https://fs-pokedex-walker.onrender.com/ 
+
+## Render URL
+
+created on Sept 25, 2026 according to the instruction of Exercise 11.10
+
+https://fs-pokedex-walker.onrender.com/
 
 ## Folder Structure
 

@@ -7,6 +7,7 @@
 # 1. Exercise 11.5: implement a "Lint" workflow
 # 2. Exercise 11.7: add build and test commands
 # 3. Exercise 11.9: add simple end-to-end tests
+# 4. Exercise 11.11: make deployments automatic
 
 name: Deployment pipeline
 
@@ -52,3 +53,5 @@ jobs:
           retention-days: 30
           if-no-files-found: ignore # Prevents warnings if the folder doesn't exist
 
+      - name: Trigger deployment
+        run: curl ${{ secrets.RENDER_DEPLOY_HOOK }}
