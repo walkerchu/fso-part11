@@ -18,7 +18,7 @@ const start = async () => {
 
 // exercise 11.12 : add 'version' endpoint
 app.get('/version', (req, res) => {
-  res.send('11.15.0') // change value for each new version deployed
+  res.send('11.16.0') // change value for each new version deployed
 })
 
 // exercise 11.12 : add 'health check' endpoint
