@@ -8,6 +8,8 @@
 # 2. Exercise 11.7: add build and test commands
 # 3. Exercise 11.9: add simple end-to-end tests
 # 4. Exercise 11.11: make deployments automatic to Rander
+# 5. Exercise 11.13: add pull request triggers
+# 6. Exercise 11.14: run deployment only for main branch
 
 name: Deployment pipeline
 
@@ -15,6 +17,9 @@ on:
   push:
     branches:
       - main
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize]
 
 jobs:
   simple_deployment_pipeline:
@@ -54,4 +59,7 @@ jobs:
           if-no-files-found: ignore # Prevents warnings if the folder doesn't exist
 
       - name: Trigger deployment
+        # exercise 11.14: add 'if' to ensure this step is exercuted only
+        # if the code is being merged or push to the main branch
+        if: ${{ github.event_name == 'push' }}
         run: curl ${{ secrets.RENDER_DEPLOY_HOOK }}
