@@ -1,3 +1,8 @@
+// Full Stack open: Continuous integration (part 11)
+// by The University of Helsinki
+// url : https://courses.mooc.fi/org/uh-cs/courses/full-stack-open-continuous-integration
+// modified: Sept 26, 2026
+
 const express = require('express')
 const app = express()
 
@@ -13,7 +18,7 @@ const start = async () => {
 
 // exercise 11.12 : add 'version' endpoint
 app.get('/version', (req, res) => {
-  res.send('11.12.2') // change this string for each new version deployed
+  res.send('11.13.1') // change value for each new version deployed
 })
 
 // exercise 11.12 : add 'health check' endpoint

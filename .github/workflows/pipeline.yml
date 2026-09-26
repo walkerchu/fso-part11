@@ -8,6 +8,7 @@
 # 2. Exercise 11.7: add build and test commands
 # 3. Exercise 11.9: add simple end-to-end tests
 # 4. Exercise 11.11: make deployments automatic to Rander
+# 5. Exercise 11.13: add pull request triggers
 
 name: Deployment pipeline
 
@@ -15,6 +16,9 @@ on:
   push:
     branches:
       - main
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize]
 
 jobs:
   simple_deployment_pipeline:
