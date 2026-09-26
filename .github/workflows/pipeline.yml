@@ -10,6 +10,7 @@
 # 4. Exercise 11.11: make deployments automatic to Rander
 # 5. Exercise 11.13: add pull request triggers
 # 6. Exercise 11.14: run deployment only for main branch
+# 7. Exercise 11.15: automatically increase (bump) the version
 
 name: Deployment pipeline
 
@@ -63,3 +64,19 @@ jobs:
         # if the code is being merged or push to the main branch
         if: ${{ github.event_name == 'push' }}
         run: curl ${{ secrets.RENDER_DEPLOY_HOOK }}
+
+  tag_release:
+    needs: [simple_deployment_pipeline]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Bump version and push tag
+        if: ${{ github.event_name == 'push' }}
+        # exercise 11.15: auto increase (bump) the version
+        # use most recent version of github-tag-action as exercise advised
+        uses: anothrNick/github-tag-action@1.75.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DEFAULT_BUMP: patch
+          DRY_RUN: true
