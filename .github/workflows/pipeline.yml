@@ -73,7 +73,7 @@ jobs:
     runs-on: ubuntu-latest
     # exercise 11.14 & 11.16: ensure merge to main AND no #skip keyword
     if: >
-      github.event_name == 'push' && 
+      github.event_name == 'push' &&
       !contains(toJson(github.event.commits.*.message), '#skip')
     steps:
       - uses: actions/checkout@v6
@@ -85,3 +85,60 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           DEFAULT_BUMP: patch
           DRY_RUN: false
+
+  notify_success:
+    needs: [simple_deployment_pipeline]
+    runs-on: ubuntu-latest
+    if: >
+      github.event_name == 'push' &&
+      needs.simple_deployment_pipeline.result == 'success' &&
+      !contains(toJson(github.event.commits.*.message), '#skip')
+    steps:
+      - name: Set short git commit SHA
+        id: vars
+        run: echo "SHORT_SHA=${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
+
+      - name: Send Discord Success Notification
+        uses: sarisia/actions-status-discord@v1.16.0
+        with:
+          webhook: ${{secrets.DISCORD_WEBHOOK}}
+          username: Fullstack Part 11 Hook
+          color: 0x0fbf3e
+          status: ${{ needs.simple_deployment_pipeline.result }}
+          title: "✅ A new version deployed to production"
+          description: |
+            **Branch:** ${{ github.ref_name }}
+            **Commit:**  ${{ steps.vars.outputs.SHORT_SHA }}
+            **Message:** ${{ github.event.head_commit.message }}
+            **Author:** ${{ github.actor }}
+            **Job:** ${{ github.job }}
+
+            [View Commit](${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }})
+
+  notify_failure:
+    needs: [simple_deployment_pipeline]
+    runs-on: ubuntu-latest
+    if: >
+      always() &&
+      needs.simple_deployment_pipeline.result == 'failure'
+    steps:
+      - name: Set short git commit SHA
+        id: vars
+        run: echo "SHORT_SHA=${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
+
+      - name: Send Discord Failure Notification
+        uses: sarisia/actions-status-discord@v1.16.0
+        with:
+          webhook: ${{secrets.DISCORD_WEBHOOK}}
+          username: Fullstack Part 11 Hook
+          color: 0xfe4c25
+          status: ${{ needs.simple_deployment_pipeline.result }}
+          title: "❌ The pipeline encountered an error"
+          description: |
+            **Branch:** ${{ github.ref_name }}
+            **Commit:**  ${{ steps.vars.outputs.SHORT_SHA }}
+            **Message:** ${{ github.event.head_commit.message }}
+            **Author:** ${{ github.actor }}
+            **Job:** ${{ github.job }}
+
+            [View Commit](${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }})
