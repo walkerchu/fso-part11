@@ -12,7 +12,6 @@
 # 6. Exercise 11.14: run deployment only for main branch
 # 7. Exercise 11.15: automatically increase (bump) the version
 # 8. Exercise 11.16: not deploy if commit msg contains #skip
-# 9. Exercise 11.18: build status notification to Discord
 
 name: Deployment pipeline
 
