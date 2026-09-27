@@ -100,17 +100,16 @@ jobs:
     steps:
       - name: Set short git commit SHA
         id: vars
-        run: |
-          echo "SHORT_SHA=${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
+        run: echo "SHORT_SHA=${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
 
       - name: Send Discord Success Notification
-        uses: sarisia/actions-status-discord@v1
+        uses: sarisia/actions-status-discord@v1.16.0
         with:
           webhook: ${{secrets.DISCORD_WEBHOOK}}
           username: Fullstack Part 11 Hook
           color: 0x0fbf3e
           status: ${{ job.status }}
-          title: "✅A new version deployed to production"
+          title: "✅ A new version deployed to production"
           description: |
             **Branch:** ${{ github.ref_name }}
             **Commit:**  ${{ steps.vars.outputs.SHORT_SHA }}
@@ -127,16 +126,23 @@ jobs:
       always() &&
       needs.simple_deployment_pipeline.result == 'failure'
     steps:
+      - name: Set short git commit SHA
+        id: vars
+        run: echo "SHORT_SHA=${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
+
       - name: Send Discord Failure Notification
-        uses: sarisia/actions-status-discord@v1
+        uses: sarisia/actions-status-discord@v1.16.0
         with:
           webhook: ${{secrets.DISCORD_WEBHOOK}}
           username: Fullstack Part 11 Hook
           color: 0xfe4c25
           status: ${{ job.status }}
-          title: "❌The pipeline encountered an error"
+          title: "❌ The pipeline encountered an error"
           description: |
-            Commit: ${{ github.sha }}
-            Author: ${{ github.actor }}
-            Job: ${{ github.job }}
-            Message: ${{ github.event.commits.*.message }}
+            **Branch:** ${{ github.ref_name }}
+            **Commit:**  ${{ steps.vars.outputs.SHORT_SHA }}
+            **Message:** ${{ github.event.head_commit.message }}
+            **Author:** ${{ github.actor }}
+            **Job:** ${{ github.job }}
+
+            [View Commit](${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }})
