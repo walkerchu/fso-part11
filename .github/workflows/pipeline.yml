@@ -98,29 +98,24 @@ jobs:
       needs.simple_deployment_pipeline.result == 'success' &&
       !contains(toJson(github.event.commits.*.message), '#skip')
     steps:
-      # - name: Set short git commit SHA
-      #   id: vars
-      #   run: |
-      #     shortedSha=$(git rev-parse --short ${{ github.sha }})
-      #     echo "COMMIT_SHORT_SHA=$shortedSha" >> $GITHUB_ENV
-      #     echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+      - name: Set short git commit SHA
+        id: vars
+        run: echo "SHORT_SHA=${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
 
       - name: Send Discord Success Notification
         uses: sarisia/actions-status-discord@v1
         with:
           webhook: ${{secrets.DISCORD_WEBHOOK}}
           username: Fullstack Part 11 Hook
-          avatar_url:
+          avatar_url: ${{ vars.AVATAR_URL }}
           color: 0x0fbf3e
           status: ${{ job.status }}
           title: "A new version deployed to production"
-          # Commit:  ${{ steps.vars.outputs.sha_short }}
-          # Commit:  ${{ env.COMMIT_SHORT_SHA }}
           description: |
-            Commit: ${{ github.event.after }}
+            Commit:  ${{ steps.vars.outputs.SHORT_SHA }}
             Author: ${{ github.actor }}
             Job: ${{ github.job }}
-            Message: ${{ github.event.commits.*.message }}
+            Message: ${{ github.event.head_commit.message }}
 
   notify_failure:
     needs: [simple_deployment_pipeline]
@@ -134,7 +129,7 @@ jobs:
         with:
           webhook: ${{secrets.DISCORD_WEBHOOK}}
           username: Fullstack Part 11 Hook
-          avatar_url: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-i/red-blue/25.png"
+          avatar_url: ${{ vars.AVATAR_URL }}
           color: 0xfe4c25
           status: ${{ job.status }}
           title: "The pipeline encountered an error"
