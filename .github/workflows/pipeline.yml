@@ -37,10 +37,6 @@ jobs:
           node-version: "24"
           cache: "npm"
 
-      # simulation failure
-      - name: Force failure test
-        run: exit 1
-
       - name: Install dependencies
         run: npm install
 
@@ -86,6 +82,10 @@ jobs:
       !contains(toJson(github.event.commits.*.message), '#skip')
 
     steps:
+      # simulation failure
+      - name: Force failure test
+        run: exit 1
+
       # exercise 11.14: add 'if' to ensure this step is executed only
       # if the code is being merged or push to the main branch
       - run: curl ${{ secrets.RENDER_DEPLOY_HOOK }}
