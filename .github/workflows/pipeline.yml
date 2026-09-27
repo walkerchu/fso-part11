@@ -72,8 +72,10 @@ jobs:
     needs: [simple_deployment_pipeline]
     runs-on: ubuntu-latest
     # exercise 11.14 & 11.16: ensure merge to main AND no #skip keyword
+
+    # github.event_name == 'push' &&
+
     if: >
-      github.event_name == 'push' && 
       !contains(toJson(github.event.commits.*.message), '#skip')
     steps:
       - uses: actions/checkout@v6
@@ -85,3 +87,59 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           DEFAULT_BUMP: patch
           DRY_RUN: false
+
+  notify_success:
+    needs: [simple_deployment_pipeline]
+    runs-on: ubuntu-latest
+
+    # github.event_name == 'push' &&
+
+    if: >
+      needs.simple_deployment_pipeline.result == 'success' &&
+      !contains(toJson(github.event.commits.*.message), '#skip')
+    steps:
+      # - name: Set short git commit SHA
+      #   id: vars
+      #   run: |
+      #     shortedSha=$(git rev-parse --short ${{ github.sha }})
+      #     echo "COMMIT_SHORT_SHA=$shortedSha" >> $GITHUB_ENV
+      #     echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+
+      - name: Send Discord Success Notification
+        uses: sarisia/actions-status-discord@v1
+        with:
+          webhook: ${{secrets.DISCORD_WEBHOOK}}
+          username: Fullstack Part 11 Hook
+          avatar_url:
+          color: 0x0fbf3e
+          status: ${{ job.status }}
+          title: "A new version deployed to production"
+          # Commit:  ${{ steps.vars.outputs.sha_short }}
+          # Commit:  ${{ env.COMMIT_SHORT_SHA }}
+          description: |
+            Commit: ${{ github.event.after }}
+            Author: ${{ github.actor }}
+            Job: ${{ github.job }}
+            Message: ${{ github.event.commits.*.message }}
+
+  notify_failure:
+    needs: [simple_deployment_pipeline]
+    runs-on: ubuntu-latest
+    if: >
+      always() &&
+      needs.simple_deployment_pipeline.result == 'failure'
+    steps:
+      - name: Send Discord Failure Notification
+        uses: sarisia/actions-status-discord@v1
+        with:
+          webhook: ${{secrets.DISCORD_WEBHOOK}}
+          username: Fullstack Part 11 Hook
+          avatar_url: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-i/red-blue/25.png"
+          color: 0xfe4c25
+          status: ${{ job.status }}
+          title: "The pipeline encountered an error"
+          description: |
+            Commit: ${{ github.sha }}
+            Author: ${{ github.actor }}
+            Job: ${{ github.job }}
+            Message: ${{ github.event.commits.*.message }}
