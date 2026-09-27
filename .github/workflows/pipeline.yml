@@ -138,7 +138,8 @@ jobs:
     runs-on: ubuntu-latest
     if: >
       always() &&
-      needs.deployment.result == 'failure'
+      (needs.build_and_test.result == 'failure' || 
+      needs.deployment.result == 'failure')
     steps:
       - name: Set short git commit SHA
         id: vars
