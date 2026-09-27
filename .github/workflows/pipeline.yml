@@ -72,8 +72,10 @@ jobs:
     needs: [simple_deployment_pipeline]
     runs-on: ubuntu-latest
     # exercise 11.14 & 11.16: ensure merge to main AND no #skip keyword
+
+    # github.event_name == 'push' &&
+
     if: >
-      github.event_name == 'push' && 
       !contains(toJson(github.event.commits.*.message), '#skip')
     steps:
       - uses: actions/checkout@v6
@@ -89,9 +91,11 @@ jobs:
   notify_success:
     needs: [simple_deployment_pipeline]
     runs-on: ubuntu-latest
+
+    # github.event_name == 'push' &&
+
     if: >
       needs.simple_deployment_pipeline.result == 'success' &&
-      github.event_name == 'push' &&
       !contains(toJson(github.event.commits.*.message), '#skip')
     steps:
       # - name: Set short git commit SHA
