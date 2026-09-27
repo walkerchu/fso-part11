@@ -12,6 +12,8 @@
 # 6. Exercise 11.14: run deployment only for main branch
 # 7. Exercise 11.15: automatically increase (bump) the version
 # 8. Exercise 11.16: not deploy if commit msg contains #skip
+# 9. Exercise 11.18: set up Discord notification by using webhook
+# 10. Exercise 11.19: splite workflow to logical jobs
 
 name: Deployment pipeline
 
@@ -24,7 +26,7 @@ on:
     types: [opened, synchronize]
 
 jobs:
-  simple_deployment_pipeline:
+  build_and_test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -32,6 +34,7 @@ jobs:
       - uses: actions/setup-node@v6
         with:
           node-version: "24"
+          cache: "npm"
 
       - name: Install dependencies
         run: npm install
@@ -44,6 +47,14 @@ jobs:
 
       - name: Run npm build
         run: npm run build
+
+      - name: Cache Playwright Browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            playwright-${{ runner.os }}-
 
       - name: Install Playwright Chromium
         run: npx playwright install chromium --with-deps
@@ -60,23 +71,31 @@ jobs:
           retention-days: 30
           if-no-files-found: ignore # Prevents warnings if the folder doesn't exist
 
-      - name: Trigger deployment
-        # exercise 11.14: add 'if' to ensure this step is exercuted only
-        # if the code is being merged or push to the main branch
-        if: >
-          github.event_name == 'push' &&
-          !contains(toJson(github.event.commits.*.message), '#skip')
-        run: curl ${{ secrets.RENDER_DEPLOY_HOOK }}
+  deployment:
+    needs: [build_and_test]
+    runs-on: ubuntu-latest
 
-  tag_release:
-    needs: [simple_deployment_pipeline]
+    if: >
+      github.event_name == 'push' &&
+      !contains(toJson(github.event.commits.*.message), '#skip')
+
+    steps:
+      # exercise 11.14: add 'if' to ensure this step is executed only
+      # if the code is being merged or push to the main branch
+      - run: curl ${{ secrets.RENDER_DEPLOY_HOOK }}
+
+  tag_and_notification:
+    needs: [deployment]
     runs-on: ubuntu-latest
     # exercise 11.14 & 11.16: ensure merge to main AND no #skip keyword
+
     if: >
       github.event_name == 'push' &&
       !contains(toJson(github.event.commits.*.message), '#skip')
     steps:
       - uses: actions/checkout@v6
+        with:
+          fetch-depth: "0"
       - name: Bump version and push tag
         # exercise 11.15: auto increase (bump) the version
         # use most recent version of github-tag-action as exercise advised
@@ -86,14 +105,6 @@ jobs:
           DEFAULT_BUMP: patch
           DRY_RUN: false
 
-  notify_success:
-    needs: [simple_deployment_pipeline]
-    runs-on: ubuntu-latest
-    if: >
-      github.event_name == 'push' &&
-      needs.simple_deployment_pipeline.result == 'success' &&
-      !contains(toJson(github.event.commits.*.message), '#skip')
-    steps:
       - name: Set short git commit SHA
         id: vars
         run: echo "SHORT_SHA=${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
@@ -104,7 +115,7 @@ jobs:
           webhook: ${{secrets.DISCORD_WEBHOOK}}
           username: Fullstack Part 11 Hook
           color: 0x0fbf3e
-          status: ${{ needs.simple_deployment_pipeline.result }}
+          status: success
           title: "✅ A new version deployed to production"
           description: |
             **Branch:** ${{ github.ref_name }}
@@ -116,11 +127,12 @@ jobs:
             [View Commit](${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }})
 
   notify_failure:
-    needs: [simple_deployment_pipeline]
+    needs: [build_and_test, deployment]
     runs-on: ubuntu-latest
     if: >
       always() &&
-      needs.simple_deployment_pipeline.result == 'failure'
+      (needs.build_and_test.result == 'failure' || 
+      needs.deployment.result == 'failure')
     steps:
       - name: Set short git commit SHA
         id: vars
@@ -132,7 +144,7 @@ jobs:
           webhook: ${{secrets.DISCORD_WEBHOOK}}
           username: Fullstack Part 11 Hook
           color: 0xfe4c25
-          status: ${{ needs.simple_deployment_pipeline.result }}
+          status: failure
           title: "❌ The pipeline encountered an error"
           description: |
             **Branch:** ${{ github.ref_name }}
